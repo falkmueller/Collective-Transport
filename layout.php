@@ -8,6 +8,7 @@
     <link href="<?php echo BASEURL ?>/public/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo BASEURL ?>/public/css/chartist.min.css" rel="stylesheet">
     <link href="<?php echo BASEURL ?>/public/css/style.css" rel="stylesheet">
+    <?php echo $template->header; ?>
   </head>
   <body>
       
@@ -29,6 +30,7 @@
       <ul class="nav navbar-nav">
         <li <?php echo $template->path == "index" ? "class=\"active\"" : ""?> ><a href="<?php echo BASEURL ?>">Simulation</a></li>
         <li <?php echo $template->path == "charts" ? "class=\"active\"" : ""?>><a href="<?php echo BASEURL ?>/charts">Messung</a></li>
+        <li <?php echo $template->path == "presentation" ? "class=\"active\"" : ""?>><a href="<?php echo BASEURL ?>/presentation">Präsentation</a></li>
         <li><a href="https://www.eecs.harvard.edu/ssr/papers/aamas13-rubenstein.pdf" target="_blank">Paper</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->

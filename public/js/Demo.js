@@ -15,6 +15,7 @@
     var moving_object;
     var object_mass = parseInt($("#inp_object_mass").val());
     var object_mode = $("#sel_object_mode").val();
+    var object_mass_center = $("#sel_object_mass_center").val();
     
     var goalBody;
     
@@ -79,7 +80,7 @@
         var objectShape = new CANNON.Box(new CANNON.Vec3(5,5,2));
         moving_object.position.set(  0,  0, 2);
         if(object_mode == "cylinder"){
-            objectShape = new CANNON.Cylinder(10,10,4,8);
+            objectShape = new CANNON.Cylinder(10,10,3,8);
             moving_object.position.set(  0,  0, 4);
         }
         else if (object_mode == "long"){
@@ -92,6 +93,32 @@
         world.addBody(moving_object);
         demo.addVisual(moving_object);
         demo.currentMaterial = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+         
+        if (object_mass_center){
+            demo.currentMaterial = new THREE.MeshLambertMaterial( { color: 0x565CFF} );
+            var moving_object_weight = new CANNON.Body({ mass: object_mass * 10,  material: objectMaterial });
+            moving_object_weight.addShape(new CANNON.Cylinder(2,2,1,8));
+            
+            if(object_mass_center == "back" && object_mode != "long"){
+                moving_object_weight.position.set(  -5,  0, 6);
+            } else if (object_mass_center == "front" && object_mode != "long"){
+                moving_object_weight.position.set(  5,  0, 6);
+            } else if (object_mass_center == "right"){
+                moving_object_weight.position.set(  0,  3, 6);
+            } else if (object_mass_center == "left"){
+                moving_object_weight.position.set(  0,  -3, 6);
+            } else {
+                moving_object_weight.position.set(  0,  0, 6);
+            }
+            
+            
+            world.addBody(moving_object_weight);
+            demo.addVisual(moving_object_weight);
+            world.addConstraint(new CANNON.LockConstraint(moving_object, moving_object_weight));
+            demo.currentMaterial = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+        }
+        
+       
         
         //goal
         demo.currentMaterial = new THREE.MeshLambertMaterial( { color: 0xF2FF00 } );
@@ -195,41 +222,10 @@
        
     });
     
-    function set_ants_count(count){
-        ants_count = parseInt(count);
-        restart();
-    }
-    
-    function set_ants_mass(mass){
-        ants_mass = parseInt(mass);
-        restart();
-    }
-    
-    function set_ants_force(force){
-        force_scale = parseInt(force);
-        restart();
-    }
-    
-    function set_object_mass(mass){
-        object_mass = parseInt(mass);
-        restart();
-    }
-    
-    function set_ants_mode(mode){
-        ants_mode = mode;
-        restart();
-    }
-    
-    function set_object_mode(mode){
-        object_mode = mode;
-        restart();
-    }
-    
     function toggle_measure(checked){
         measure.enable = checked;
     }
-    
-    
+
     function setRenderMode(mode) { 
         demo.setRenderMode(mode);
         $("#sel_renderMode").val(mode);

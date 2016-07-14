@@ -100,9 +100,9 @@
             moving_object_weight.addShape(new CANNON.Cylinder(2,2,1,8));
             
             if(object_mass_center == "back" && object_mode != "long"){
-                moving_object_weight.position.set(  -5,  0, 6);
+                moving_object_weight.position.set(  -3,  0, 6);
             } else if (object_mass_center == "front" && object_mode != "long"){
-                moving_object_weight.position.set(  5,  0, 6);
+                moving_object_weight.position.set(  3,  0, 6);
             } else if (object_mass_center == "right"){
                 moving_object_weight.position.set(  0,  3, 6);
             } else if (object_mass_center == "left"){

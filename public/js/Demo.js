@@ -161,6 +161,37 @@
             }
 
         });
+        
+        var onMouseDown = function(e){
+             var screenX = e.clientX - $("#canvas_container").offset().left;
+            var screenY = e.clientY - $("#canvas_container").offset().top + $(window).scrollTop();
+            var SCREEN_WIDTH = $("#canvas_container").innerWidth();
+            var SCREEN_HEIGHT = $("#canvas_container").innerHeight();
+
+            var mouse3D = new THREE.Vector3();
+            mouse3D.x = (screenX / SCREEN_WIDTH) * 2 - 1;
+            mouse3D.y = -(screenY / SCREEN_HEIGHT) * 2 + 1;
+            mouse3D.z = 0.5;
+            
+            var projector = new THREE.Projector();
+            
+            var raycaster = projector.pickingRay(mouse3D, demo.camera);
+            var pos = raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), 0));
+
+            var antShape =  new CANNON.Sphere(1.2);
+            var antBody =  new CANNON.Body({ mass: ants_mass, material: antMaterial });
+            antBody.label = "ant";
+            antBody.addShape(antShape);
+            
+            antBody.position.set( pos.x, pos.y , 1.2);
+            
+            ants.push(antBody);
+            demo.addVisual(antBody);
+            world.addBody(antBody);         
+
+        }
+        $("#canvas_container").unbind("contextmenu")
+        $("#canvas_container").bind("contextmenu",onMouseDown);
        
     });
     

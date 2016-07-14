@@ -19,6 +19,7 @@ CANNON.Demo = function(options){
     this.changeScene = changeScene;
     this.toggle_pause = toggle_pause;
     this.start = start;
+    this.camera = null;
     
     // Global settings
     var settings = this.settings = {
@@ -413,7 +414,7 @@ CANNON.Demo = function(options){
     var MARGIN = 0;
     var SCREEN_WIDTH = $("#canvas_container").innerWidth();
     var SCREEN_HEIGHT = window.innerHeight - 2 * MARGIN;
-    var camera, controls, renderer;
+    var controls, renderer;
     var container;
     var NEAR = 5, FAR = 2000;
     var sceneHUD, cameraOrtho, hudMaterial;
@@ -431,10 +432,10 @@ CANNON.Demo = function(options){
         container = document.getElementById("canvas_container");
 
         // Camera
-        camera = new THREE.PerspectiveCamera( 24, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR );
+        that.camera = new THREE.PerspectiveCamera( 24, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR );
 
-        camera.up.set(0,0,1);
-        camera.position.set(0,60,40);
+        that.camera.up.set(0,0,1);
+        that.camera.position.set(0,60,40);
 
         // SCENE
         scene = that.scene = new THREE.Scene();
@@ -462,7 +463,7 @@ CANNON.Demo = function(options){
         //light.shadowCameraVisible = true;
 
         scene.add( light );
-        scene.add( camera );
+        scene.add( that.camera );
 
         // RENDERER
         renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 1, antialias: false } );
@@ -547,7 +548,7 @@ CANNON.Demo = function(options){
 
 
         // Trackball controls
-        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls = new THREE.TrackballControls( that.camera, renderer.domElement );
         controls.rotateSpeed = 1.0;
         controls.zoomSpeed = 1.2;
         controls.panSpeed = 0.2;
@@ -611,19 +612,19 @@ CANNON.Demo = function(options){
 
         renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
 
-        camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-        camera.updateProjectionMatrix();
+        that.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+        that.camera.updateProjectionMatrix();
 
         controls.screen.width = SCREEN_WIDTH;
         controls.screen.height = SCREEN_HEIGHT;
 
-        camera.radius = ( SCREEN_WIDTH + SCREEN_HEIGHT ) / 4;
+        that.camera.radius = ( SCREEN_WIDTH + SCREEN_HEIGHT ) / 4;
     }
 
     function render(){
         controls.update();
         renderer.clear();
-        renderer.render( that.scene, camera );
+        renderer.render( that.scene, that.camera );
     }
 
 

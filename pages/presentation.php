@@ -3,128 +3,54 @@ require_once BASEDIR.'/vendor/parsedown/Parsedown.php';
 
 class mdParser extends  Parsedown {
     
-    /*override link parser for add external target attrebut to link*/
-    protected function inlineLink($Excerpt)
-    {
-        $Element = array(
-            'name' => 'a',
-            'handler' => 'line',
-            'text' => null,
-            'attributes' => array(
-                'href' => null,
-                'title' => null,
-            ),
-        );
-
-        $extent = 0;
-
-        $remainder = $Excerpt['text'];
-
-        if (preg_match('/\[((?:[^][]|(?R))*)\]/', $remainder, $matches))
-        {
-            $Element['text'] = $matches[1];
-
-            $extent += strlen($matches[0]);
-
-            $remainder = substr($remainder, $extent);
+    /*set absolute Links*/
+    protected function inlineLink($Excerpt){
+       $element = parent::inlineLink($Excerpt);
+       
+       $element["element"]['attributes']['target'] = "_blank";
+       
+       if(strpos($element["element"]['attributes']['href'], "://") === false){
+            $element["element"]['attributes']['href'] = BASEURL.'/'.$element["element"]['attributes']['href'];
         }
-        else
-        {
-            return;
-        }
-
-        if (preg_match('/^[(]((?:[^ ()]|[(][^ )]+[)])+)(?:[ ]+("[^"]*"|\'[^\']*\'))?[)]/', $remainder, $matches))
-        {
-            $Element['attributes']['href'] = $matches[1];
-
-            if (isset($matches[2]))
-            {
-                $Element['attributes']['title'] = substr($matches[2], 1, - 1);
-            }
-
-            $extent += strlen($matches[0]);
-        }
-        else
-        {
-            if (preg_match('/^\s*\[(.*?)\]/', $remainder, $matches))
-            {
-                $definition = strlen($matches[1]) ? $matches[1] : $Element['text'];
-                $definition = strtolower($definition);
-
-                $extent += strlen($matches[0]);
-            }
-            else
-            {
-                $definition = strtolower($Element['text']);
-            }
-
-            if ( ! isset($this->DefinitionData['Reference'][$definition]))
-            {
-                return;
-            }
-
-            $Definition = $this->DefinitionData['Reference'][$definition];
-
-            $Element['attributes']['href'] = $Definition['url'];
-            $Element['attributes']['title'] = $Definition['title'];
-        }
-
-        $Element['attributes']['href'] = str_replace(array('&', '<'), array('&amp;', '&lt;'), $Element['attributes']['href']);
-        $Element['attributes']['target'] = "_blank";
-        
-        if(strpos($Element['attributes']['href'], "://") === false){
-            $Element['attributes']['href'] = BASEURL.'/'.$Element['attributes']['href'];
-        }
-        
-        
-        return array(
-            'extent' => $extent,
-            'element' => $Element,
-        );
+       
+       return $element;
     }
     
-    /*override image parser for add external target attrebut to link*/
+    /*parent called inlineLink, so only reset target element*/
     protected function inlineImage($Excerpt)
     {
-        if ( ! isset($Excerpt['text'][1]) or $Excerpt['text'][1] !== '[')
-        {
-            return;
-        }
-
-        $Excerpt['text']= substr($Excerpt['text'], 1);
-
-        $Link = $this->inlineLink($Excerpt);
-
-        if ($Link === null)
-        {
-            return;
-        }
-
-        $Inline = array(
-            'extent' => $Link['extent'] + 1,
-            'element' => array(
-                'name' => 'img',
-                'attributes' => array(
-                    'src' => $Link['element']['attributes']['href'],
-                    'alt' => $Link['element']['text'],
-                ),
-            ),
-        );
-
-        $Inline['element']['attributes'] += $Link['element']['attributes'];
-
-        unset($Inline['element']['attributes']['href']);
-        if(strpos($Inline['element']['attributes']['src'], "://") === false){
-            $Inline['element']['attributes']['src'] = BASEURL.'/'.$Inline['element']['attributes']['src'];
-        }
-
+        $Inline = parent::inlineImage($Excerpt);
+        unset($Inline['element']['attributes']['target']);
+        
         return $Inline;
     }
     
-    private function startsWith($haystack, $needle) {
-        // search backwards starting from haystack length characters from the end
-        return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+    /*prevalidate input markdown*/
+    function text($text)
+    {
+        $getImageURL = function($matches){
+                $url = $matches[2];
+                if(strpos($url, "://") === false){
+                    $url = BASEURL.'/'.$url;
+                }
+                 return $matches[1].$url;
+            };
+            
+        $getLinkURL = function($matches){
+                $url = $matches[2];
+                if(strpos($url, "://") === false){
+                    $url = BASEURL.'/'.$url;
+                }
+                 return $matches[1].$url;
+            };
+            
+        $text= preg_replace_callback("/(<img[^>]*src *= *[\"']?)([^\"']*)/i", $getImageURL, $text);
+        $text = preg_replace_callback("/(<a[^>]*href *= *[\"']?)([^\"']*)/i", $getLinkURL, $text);  
+
+        
+        return parent::text($text);
     }
+
 } ?>
 
 <?php $template->startBlock("slides") ?>
@@ -155,6 +81,7 @@ foreach ($files as $file){
     $slug = preg_replace('/[^A-Za-z0-9-]/', '', substr($file,0,-3));
     
     $content =  $Parsedown->text(file_get_contents(BASEDIR.'/slides/'.$file));
+
     ?>
     
     <section class="slide <?php echo $slug ?>">
@@ -221,6 +148,10 @@ if(isset($_GET["print"])){
 <?php $template->startBlock("header") ?>
     <link href="<?php echo BASEURL ?>/public/css/presentation.css" rel="stylesheet">
     <link href="<?php echo BASEURL ?>/public/css/presentation-theme.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="<?php echo BASEURL ?>/public/css/featherlight.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="<?php echo BASEURL ?>/public/css/featherlight.gallery.css" type="text/css" media="screen" />
+
 <?php $template->endBlock("header"); ?>
 
 <?php $template->startBlock("content") ?>
@@ -244,4 +175,14 @@ if(isset($_GET["print"])){
           p_slides.options.enableMouseWheel = false;
           p_slides.init();
       </script>
+      
+    <script type="text/javascript" src="<?php echo BASEURL ?>/public/js/featherlight.js"></script>
+    <script type="text/javascript" src="<?php echo BASEURL ?>/public/js/featherlight.gallery.js"></script>
+    <script type="text/javascript">
+	$(document).ready(function() {
+		$('.lightbox').featherlightGallery({
+                    root: ".page_wrapper"
+                });
+	});
+</script>
 <?php $template->endBlock("scripts"); ?>

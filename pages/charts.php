@@ -5,7 +5,7 @@
             <h2>y-Abweischung</h2>
             <div id="x_chart_y"></div>
             <hr/>
-            <h2>Rotation (allgemain)</h2>
+            <h2>Rotation (allgemein)</h2>
             <div id="x_chart_r"></div>
             
             <h2>Rotation (Gewicht rechts, Gewicht Links)</h2>
